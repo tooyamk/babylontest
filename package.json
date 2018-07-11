@@ -3,6 +3,5 @@
   "name": "asp.net",
   "private": true,
   "devDependencies": {
-    "del": "2.2.0"
   }
 }
