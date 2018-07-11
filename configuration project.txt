@@ -1,0 +1,19 @@
+安装node.js
+
+安装TypeScript 
+cmd: npm install -g typescript 
+
+安装@Angular/cli
+cmd: npm install -g @angular/cli
+
+安装vscode
+
+安装vscode chrome调试插件 : Debugger for Chrome
+
+安装apache
+在httpd.conf文件里
+1:将DocumentRoot定位到工程根目录
+2:<Directory />节点下把
+  Order deny,allow
+  Deny from all
+  两个配置注释掉

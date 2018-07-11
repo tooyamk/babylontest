@@ -1,0 +1,17 @@
+{
+    "version": "2.0.0",
+    "configurations": [
+        {
+            "name": "Launch Browser",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://127.0.0.1:80/wwwroot/index.html",
+            "sourceMaps": true,
+            "userDataDir": "${workspaceRoot}/.tempChromeProfileForDebug",
+            "preLaunchTask": "build",
+            "cwd": "${workspaceRoot}",
+            "webRoot": "${workspaceRoot}",
+            "runtimeArgs": ["--enable-unsafe-es3-apis"]
+        }
+    ]
+}
