@@ -1,3 +1,5 @@
+/// <reference path="../babylon/babylon.d.ts" /> 
+
 class Game {
     public static readonly PI2: number = Math.PI * 2.0;
     public static readonly DEG_2_RAD: number = Math.PI / 180.0;
@@ -19,12 +21,13 @@ class Game {
     private _pp: BABYLON.PostProcess;
     private _numLoadedAssets: number;
     private _totalLoadAssets: number;
+    private _postProcessManager: BABYLON.PostProcessManager;
 
     private static _ins : Game;
 
     constructor(canvasElement: string) {
         Game._ins = this;
-
+        
         document.oncontextmenu = () => {
             return false;
         }
@@ -50,13 +53,14 @@ class Game {
 
         this._createSkybox();
 
-        //new BABYLON.DebugLayer(this._scene).show();
+        new BABYLON.DebugLayer(this._scene).show();
 
         // Create a FreeCamera, and set its position to (x:0, y:5, z:-10).
         this._camera = new CameraManager();
         this._camera.setRotationXRange(-10.0 * Game.DEG_2_RAD, 90 * Game.DEG_2_RAD);
         this._input = new Input(this._canvas);
         this._player = new Player();
+        this._postProcessManager = new BABYLON.PostProcessManager(this._scene);
 
         // Attach the camera to the canvas.
         //this._camera.attachControl(this._canvas, false);
@@ -68,6 +72,9 @@ class Game {
         this._rt.renderList.push(this._skyBox);
 
         this._mainRt = new BABYLON.RenderTargetTexture("", 1024, this._scene, false);
+        this._mainRt.renderList = null;
+        //this._scene.customRenderTargets.push(this._mainRt);
+        //this._camera.mainCamera.customRenderTargets.push(this._mainRt);
 
         // Create a basic light, aiming 0,1,0 - meaning, to the sky.
         let light: BABYLON.DirectionalLight = new BABYLON.DirectionalLight('light1', new BABYLON.Vector3(1, -1, 0), this._scene);
@@ -128,10 +135,9 @@ class Game {
             BABYLON.Effect.ShadersStore["ppDrawToPixelShader"] = task.text;
             this._numLoadedAssets++;
 
-            this._pp = new BABYLON.PostProcess("", "ppDrawTo", [], null, 0, this._camera.postProcessCamera);
-            this._pp.clearColor = new BABYLON.Color4(1, 1, 0, 1);
+            this._pp = new BABYLON.PostProcess("", "ppDrawTo", null, ["tex"], 0, null);
             this._pp.onApply = (effect: BABYLON.Effect) => {
-                effect.setTexture("sampler2D", this._mainRt);
+                effect.setTexture("tex", this._mainRt);
             };
         };
         txtTask.onError = (task: BABYLON.TextFileAssetTask) => {
@@ -188,6 +194,10 @@ class Game {
 
     public doRender(): void {
         // Run the render loop.
+        this._scene.onBeforeRenderObservable.add((evtData : BABYLON.Scene, evtState : BABYLON.EventState) => {
+            //this._rt.render(false, false);
+        });
+
         this._engine.runRenderLoop(() => {
             if (this._numLoadedAssets == this._totalLoadAssets) {
                 if (this._input.isKeyPress("a")) this._player.getDisplay().translate(new BABYLON.Vector3(-1, 0, 0), 0.1, BABYLON.Space.LOCAL);
@@ -212,13 +222,13 @@ class Game {
                 if (this._input.isMousePress(1)) this._camera.identity();
 
                 this._scene.activeCamera = this._camera.mainCamera;
-                this._rt.render(false, false);
 
-                this._mainRt.renderList = this._scene.meshes;
-                this._mainRt.render(false, false);
-
-                //this._scene.activeCamera = this._camera.postProcessCamera;
                 this._scene.render();
+                //this._mainRt.render(false, false);
+
+                //this._postProcessManager.directRender([this._pp], null, true);
+                //this._scene.activeCamera = this._camera.postProcessCamera;
+                //this._scene.render();
             } else {
                 this._scene.render();
             }

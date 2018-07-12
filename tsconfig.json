@@ -13,7 +13,7 @@
     "listEmittedFiles": true,
     "outFile": "./wwwroot/app.js"
   },
-  "include": [ "**/*.ts" ],
+  "include": [ "scripts/src/**/*.ts" ],
   "exclude": [],
   "compileOnSave": true
 }
