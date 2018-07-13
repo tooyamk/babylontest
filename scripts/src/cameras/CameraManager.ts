@@ -1,5 +1,5 @@
 class CameraManager {
-    private _mainCam: BABYLON.TargetCamera;
+    private _mainCam: Camera;
     private _root: BABYLON.TransformNode;
     private _rotationX: BABYLON.TransformNode;
     private _rotationY: BABYLON.TransformNode;
@@ -11,7 +11,7 @@ class CameraManager {
     constructor() {
         this._rotXRange = new BABYLON.Vector2(NaN, NaN);
 
-        let scene = Game.getIns().getScene();
+        let scene = GameManager.ins.scene;
         this._root = new BABYLON.TransformNode("", scene);
 
         this._rotationY = new BABYLON.TransformNode("", scene);
@@ -20,7 +20,7 @@ class CameraManager {
         this._rotationX = new BABYLON.TransformNode("", scene);
         this._rotationX.parent = this._rotationY;
 
-        this._mainCam = new BABYLON.TargetCamera("", BABYLON.Vector3.Zero(), scene);
+        this._mainCam = new Camera("");
         this._mainCam.parent = this._rotationX;
 
         this.identity();
@@ -42,7 +42,7 @@ class CameraManager {
     }
 
     public set rotationX(value : number) {
-        value %= Game.PI2;
+        value %= GameManager.PI2;
         if (this._rotXRange.x == this._rotXRange.x && value < this._rotXRange.x) value = this._rotXRange.x;
         if (this._rotXRange.y == this._rotXRange.y && value > this._rotXRange.y) value = this._rotXRange.y;
         this._rotationX.rotation.x = value;
@@ -53,10 +53,10 @@ class CameraManager {
     }
 
     public set rotationY(value: number) {
-        this._rotationY.rotation.y = value % Game.PI2;
+        this._rotationY.rotation.y = value % GameManager.PI2;
     }
 
-    public get mainCamera() : BABYLON.TargetCamera {
+    public get mainCamera() : Camera {
         return this._mainCam;
     }
 
@@ -81,6 +81,6 @@ class CameraManager {
         this._mainCam.position = new BABYLON.Vector3(0.0, 2.5, -12.0);
         this._mainCam.rotation = BABYLON.Vector3.Zero();
 
-        this.rotationX = 10 * Game.DEG_2_RAD;
+        this.rotationX = 10 * GameManager.DEG_2_RAD;
     }
 }
