@@ -1,15 +1,7 @@
-class Player {
-    private _dis : BABYLON.TransformNode;
-    
+/// <reference path="Entity.ts" /> 
+
+class Player extends Entity {
     constructor() {
-
-    }
-    
-    public getDisplay() :BABYLON.TransformNode {
-        return this._dis;
-    }
-
-    public setDisplay(dis : BABYLON.TransformNode) : void {
-        this._dis = dis;
+        super();
     }
 }

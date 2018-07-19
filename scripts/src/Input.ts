@@ -1,9 +1,9 @@
 class MouseKeyInfo {
-    private _isPress : boolean;
+    private _isPress: boolean;
     private _pressStartPos: BABYLON.Vector2;
     private _dragLastPos: BABYLON.Vector2;
-    private _dragDelta:BABYLON.Vector2;
-    private _isDragging : boolean;
+    private _dragDelta: BABYLON.Vector2;
+    private _isDragging: boolean;
 
     constructor() {
         this._isPress = false;
@@ -13,19 +13,19 @@ class MouseKeyInfo {
         this._isDragging = false;
     }
 
-    public get dragDelta() : BABYLON.Vector2 {
+    public get dragDelta(): BABYLON.Vector2 {
         return this._dragDelta;
     }
 
-    public get isPress() : boolean {
+    public get isPress(): boolean {
         return this._isPress;
     }
 
-    public get isDragging() : boolean {
+    public get isDragging(): boolean {
         return this._isDragging;
     }
 
-    public setPress(evt: PointerEvent) : void {
+    public setPress(evt: PointerEvent): void {
         if (evt == null) {
             this._isPress = false;
             this._isDragging = false;
@@ -38,7 +38,7 @@ class MouseKeyInfo {
         }
     }
 
-    public setMove(evt: MouseEvent) : void {
+    public setMove(evt: MouseEvent): void {
         if (this._isPress) {
             this._dragDelta.set(this._dragLastPos.x - evt.x, this._dragLastPos.y - evt.y);
             this._dragLastPos.set(evt.x, evt.y);
@@ -50,8 +50,8 @@ class MouseKeyInfo {
 class Input {
     private _keyInputMap: { [key: string]: boolean };
     private _mouseInputMap: { [key: number]: MouseKeyInfo };
-    private _mouseWheel:number;
-    private _mousePos : BABYLON.Vector2;
+    private _mouseWheel: number;
+    private _mousePos: BABYLON.Vector2;
 
     constructor(canvas: HTMLCanvasElement) {
         this._keyInputMap = {};
@@ -86,7 +86,7 @@ class Input {
         })
     }
 
-    private _getOrCreateMouseKeyInfo(key : number) : MouseKeyInfo {
+    private _getOrCreateMouseKeyInfo(key: number): MouseKeyInfo {
         let info: MouseKeyInfo = this._mouseInputMap[key];
         if (info == null) {
             info = new MouseKeyInfo();
@@ -96,28 +96,28 @@ class Input {
         return info;
     }
 
-    public isKeyPress(key : string) : boolean {
+    public isKeyPress(key: string): boolean {
         return this._keyInputMap[key];
     }
 
-    public getMouseKeyInfo(key : number) : MouseKeyInfo {
+    public getMouseKeyInfo(key: number): MouseKeyInfo {
         return this._mouseInputMap[key];
     }
 
-    public isMousePress(key : number) : boolean {
+    public isMousePress(key: number): boolean {
         let info = this._mouseInputMap[key];
         return info == null ? false : info.isPress;
     }
 
-    public getMouseWheel() : number {
+    public getMouseWheel(): number {
         return this._mouseWheel;
     }
 
-    public getMousePosition() : BABYLON.Vector2 {
+    public getMousePosition(): BABYLON.Vector2 {
         return this._mousePos;
     }
 
-    public tickEnd() : void {
+    public tickEnd(): void {
         this._mouseWheel = 0;
     }
 }

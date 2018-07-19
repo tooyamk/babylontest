@@ -1,4 +1,6 @@
 
+/// <reference path="babylon.d.ts" /> 
+
 declare module BABYLON.GUI {
     interface IFocusableControl {
         onFocus(): void;
