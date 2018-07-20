@@ -23,10 +23,12 @@ class TestScene1 extends BaseScene {
         this._numLoadedAssets = 0;
     }
 
-    public awake(): void {
-        super.awake();
+    public start(): void {
+        super.start();
 
-        this._createSkybox();
+        //this._createSkybox();
+
+        GameManager.ins.scene.clearColor.set(1, 0, 0, 1);
 
         // Create a FreeCamera, and set its position to (x:0, y:5, z:-10).
         this._camera = new CameraManager();
@@ -45,12 +47,13 @@ class TestScene1 extends BaseScene {
         this._rt.renderList.push(this._skyBox);
 
         this._mainRt = new BABYLON.RenderTargetTexture("", 2048, GameManager.ins.scene, false);
-        this._camera.mainCamera.renderTarget = this._mainRt;
+        //this._camera.mainCamera.renderTarget = this._mainRt;
         //this._mainRt.renderList = null;
         //this._scene.customRenderTargets.push(this._mainRt);
         //this._camera.mainCamera.customRenderTargets.push(this._mainRt);
 
         // Create a basic light, aiming 0,1,0 - meaning, to the sky.
+        /*
         let light: BABYLON.DirectionalLight = new BABYLON.DirectionalLight('light1', new BABYLON.Vector3(1, -1, 0), GameManager.ins.scene);
         light.position = new BABYLON.Vector3(-30, 30, 0);
         this._light = light;
@@ -58,6 +61,7 @@ class TestScene1 extends BaseScene {
         this._shadowGenerator = new BABYLON.ShadowGenerator(1024, this._light);
         this._shadowGenerator.useBlurExponentialShadowMap = true;
         this._shadowGenerator.bias = 0.01;
+        */
         //this._shadowGenerator.forceBackFacesOnly = true;
 
         // Create a built-in "sphere" shape; with 16 segments and diameter of 2.
@@ -96,6 +100,7 @@ class TestScene1 extends BaseScene {
         advancedTexture.addControl(text1);
         */
 
+        /*
         let plane = BABYLON.MeshBuilder.CreatePlane("", { width: 6, height: 3 }, GameManager.ins.scene);
         plane.position.y = 2;
         plane.position.z = 2;
@@ -104,12 +109,32 @@ class TestScene1 extends BaseScene {
         mat.disableLighting = true;
         mat.backFaceCulling = false;
         plane.material = mat;
+        */
 
         let pp = new BABYLON.PostProcess("", "ppDrawTo", null, ["tex"], 0, this._camera.postProcessCamera);
         this._pp = pp;
         this._pp.onApply = (effect: BABYLON.Effect) => {
             effect.setTexture("tex", this._mainRt);
         };
+
+        let plane1 = BABYLON.MeshBuilder.CreatePlane("", { width: 6, height: 3 }, GameManager.ins.scene);
+        plane1.position.y = 2;
+        plane1.position.z = 2;
+        plane1.position.x = -2;
+        let mat1 = new BABYLON.ShaderMaterial("", GameManager.ins.scene, ResManager.ins.createShaderPath("oit", null), ResManager.ins.createShaderOptions(true, ["position"], ["worldViewProjection", "color"]));
+        mat1.setColor4("color", new BABYLON.Color4(1, 0, 0, 0.5));
+        mat1.backFaceCulling = false;
+        plane1.material = mat1;
+        //plane1.renderingGroupId = 1;
+
+        let plane2 = BABYLON.MeshBuilder.CreatePlane("", { width: 6, height: 3 }, GameManager.ins.scene);
+        plane2.position.y = 2;
+        plane2.position.z = 3;
+        plane2.position.x = 2;
+        let mat2 = mat1.clone("");
+        mat2.setColor4("color", new BABYLON.Color4(0, 1, 0, 0.5));
+        mat2.backFaceCulling = false;
+        plane2.material = mat2;
 
         /*
         this._assetsManager.addMeshTask("", "", "res/test static model/", "test_one.babylon").onSuccess = (task : BABYLON.MeshAssetTask) => {
@@ -122,6 +147,7 @@ class TestScene1 extends BaseScene {
         };
         */
 
+        /*
         let s = GameManager.ins.scene;
 
         ResManager.ins.loadAssetContainer("res/bone anim model/model.babylon", info => {
@@ -160,6 +186,7 @@ class TestScene1 extends BaseScene {
             //console.log(anim1.masterFrame);
             //}, 30);
         });
+        */
 
         /*
         this._assetsManager.addMeshTask("", "", "res/bone anim model/", "Gremlin_walktest.babylon").onSuccess = (task: BABYLON.MeshAssetTask) => {
@@ -242,17 +269,6 @@ class TestScene1 extends BaseScene {
             mat.diffuseTexture = task2.texture;
         }, null);
         */
-
-        GameManager.ins.scene.onBeforeRenderObservable.add((evtData: BABYLON.Scene, evtState: BABYLON.EventState) => {
-            this._rt.render(false, false);
-        });
-
-        GameManager.ins.scene.onAfterRenderObservable.add((evtData: BABYLON.Scene, evtState: BABYLON.EventState) => {
-            if (this._numLoadedAssets == this._totalLoadAssets) {
-                //this._mainRt.render(false, false);
-                this._postProcessManager.directRender([this._pp], null, true);
-            }
-        });
     }
 
     private _createSkybox(): void {
@@ -289,7 +305,7 @@ class TestScene1 extends BaseScene {
         this._camera.identity();
 
         //shadowGenerator.getShadowMap().renderList.push(sphere);
-        this._shadowGenerator.addShadowCaster(mesh);
+        //this._shadowGenerator.addShadowCaster(mesh);
     }
 
     protected _onBeginFrame(evtData: BABYLON.Engine, evtState: BABYLON.EventState): void {
@@ -303,28 +319,28 @@ class TestScene1 extends BaseScene {
 
         let mlk = this._input.getMouseKeyInfo(0);
         if (mlk != null && mlk.isDragging) {
-            this._camera.rotationY -= mlk.dragDelta.x * 1 * GameManager.DEG_2_RAD;
+            this._camera.rotationY += mlk.dragDelta.x * 1 * GameManager.DEG_2_RAD;
         }
 
         let mrk = this._input.getMouseKeyInfo(2);
         if (mrk != null && mrk.isDragging) {
-            this._player.getDisplay().rotation.y -= mrk.dragDelta.x * 1 * GameManager.DEG_2_RAD;
-            this._camera.rotationX -= mrk.dragDelta.y * 1 * GameManager.DEG_2_RAD;
+            this._player.getDisplay().rotation.y += mrk.dragDelta.x * 1 * GameManager.DEG_2_RAD;
+            this._camera.rotationX += mrk.dragDelta.y * 1 * GameManager.DEG_2_RAD;
         }
 
         if (this._input.isMousePress(1)) this._camera.identity();
     }
 
     protected _onBeforeRender(evtData: BABYLON.Scene, evtState: BABYLON.EventState): void {
-        this._rt.render(false, false);
+        //this._rt.render(false, false);
     }
 
     protected _onAfterRender(evtData: BABYLON.Scene, evtState: BABYLON.EventState): void {
         if (this._numLoadedAssets == this._totalLoadAssets) {
             //this._mainRt.render(false, false);
-            this._postProcessManager.directRender([this._pp], null, true);
+            //this._postProcessManager.directRender([this._pp], null, true);
         }
 
-        this._input.tickEnd();
+        this._input.endFrame();
     }
 }

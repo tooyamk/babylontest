@@ -17,7 +17,7 @@ class SceneManager {
 
             this._scene = scene;
 
-            if (this._scene != null) this._scene.awake();
+            if (this._scene != null) this._scene.start();
         }
     }
 }

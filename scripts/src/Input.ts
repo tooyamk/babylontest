@@ -40,9 +40,15 @@ class MouseKeyInfo {
 
     public setMove(evt: MouseEvent): void {
         if (this._isPress) {
-            this._dragDelta.set(this._dragLastPos.x - evt.x, this._dragLastPos.y - evt.y);
+            this._dragDelta.set(evt.x - this._dragLastPos.x, evt.y - this._dragLastPos.y);
             this._dragLastPos.set(evt.x, evt.y);
             this._isDragging = true;
+        }
+    }
+
+    public endFrame(): void {
+        if (this._isPress) {
+            this._dragDelta.set(0, 0);
         }
     }
 }
@@ -80,15 +86,15 @@ class Input {
         canvas.addEventListener("pointermove", (evt: PointerEvent) => {
             this._mousePos.set(evt.x, evt.y);
 
-            for (const info in this._mouseInputMap) {
-                this._mouseInputMap[info].setMove(evt);
+            for (const key in this._mouseInputMap) {
+                this._mouseInputMap[key].setMove(evt);
             }
         })
     }
 
     private _getOrCreateMouseKeyInfo(key: number): MouseKeyInfo {
         let info: MouseKeyInfo = this._mouseInputMap[key];
-        if (info == null) {
+        if (!info) {
             info = new MouseKeyInfo();
             this._mouseInputMap[key] = info;
         }
@@ -117,7 +123,10 @@ class Input {
         return this._mousePos;
     }
 
-    public tickEnd(): void {
+    public endFrame(): void {
         this._mouseWheel = 0;
+        for (const key in this._mouseInputMap) {
+            this._mouseInputMap[key].endFrame();
+        }
     }
 }

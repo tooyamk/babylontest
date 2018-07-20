@@ -9,16 +9,31 @@ class LaunchScene extends BaseScene {
         this._totalNumTasks = 0;
     }
 
-    public awake(): void {
-        super.awake();
+    public start(): void {
+        super.start();
 
-        this._totalNumTasks = 1;
+        this._loadShader(false, "res/shaders/ppDrawTo.frag");
+        
+        this._loadShader(true, "res/shaders/oit.vert");
+        this._loadShader(false, "res/shaders/oit.frag");
+    }
 
-        ResManager.ins.addResCallback("res/shaders/ppDrawTo.frag", info => {
-            if (!info.isError) {
-                ResManager.ins.updateShander(null, null, "ppDrawTo", info.data as string);
+    private _loadShader(isVertex: boolean, url: string, name: string = null): void {
+        ++this._totalNumTasks;
 
-                this._doneNumTasks++;
+        if (!name) name = ResManager.ins.disassembleFileNameFromPath(url);
+
+        ResManager.ins.addResCallback(url, info => {
+            if (info.isError) {
+                console.log(info.error);
+            } else {
+                if (isVertex) {
+                    ResManager.ins.updateShander(name, info.data as string, null, null);
+                } else {
+                    ResManager.ins.updateShander(null, null, name, info.data as string);
+                }
+
+                ++this._doneNumTasks;
             }
         });
     }

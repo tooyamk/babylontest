@@ -129,7 +129,8 @@ class ResInfo {
 
 
 class ResManager {
-    public static readonly RES_ROOT:string = "http://127.0.0.1/wwwroot/";
+    //public static readonly RES_ROOT:string = "http://127.0.0.1/wwwroot/";
+    public static readonly RES_ROOT: string = "file:./";
 
     public static readonly ins: ResManager = new ResManager();
 
@@ -281,7 +282,34 @@ class ResManager {
         } 
 
         if (fragName && fragCode && fragName.length > 0) {
-            BABYLON.Effect.ShadersStore[fragName + "PixelShader"] = fragCode;
+            BABYLON.Effect.ShadersStore[fragName + "FragmentShader"] = fragCode;
         } 
+    }
+
+    public createShaderPath(vert: string, frag: string = null): any {
+        if (!frag) frag = vert;
+        return {
+            vertexElement: vert,
+            fragmentElement: frag
+        };
+    }
+
+    public createShaderOptions(needAlphaBlending: boolean = false, attributes: string[] = [], uniforms: string[] = [], samplers: string[] = []): any {
+        return {
+            needAlphaBlending: needAlphaBlending,
+            attributes: attributes,
+            uniforms: uniforms,
+            samplers: samplers
+        };
+    }
+
+    public disassembleFileNameFromPath(path: string): string {
+        let name = path;
+        let idx = path.lastIndexOf("/");
+        if (idx >= 0) name = name.substr(idx + 1);
+        idx = name.lastIndexOf(".");
+        if (idx >= 0) name = name.substr(0, idx);
+
+        return name;
     }
 }

@@ -11,7 +11,7 @@ abstract class BaseScene {
         this._onAfterRenderObserver = null;
     }
 
-    public awake(): void {
+    public start(): void {
         let engine = GameManager.ins.engine;
 
         this._onBeginFrameObserver = engine.onBeginFrameObservable.add((evtData: BABYLON.Engine, evtState: BABYLON.EventState) => {
