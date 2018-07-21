@@ -63,7 +63,8 @@ class GameManager {
         this._scene.autoClearDepthAndStencil = false;
         BABYLON.DebugLayer.InspectorURL = "./babylon/babylon.inspector.bundle.js";
         //this._scene.debugLayer.show();
-        this._engine.clear(new BABYLON.Color4(0, 1, 0, 1), true, true, true);
+        //this._engine.restoreDefaultFramebuffer();
+        //this._engine.clear(new BABYLON.Color4(0, 1, 0, 1), true, true, true);
         window.addEventListener('resize', (evt: UIEvent) => {
             this._engine.resize();
         });
@@ -104,8 +105,8 @@ class GameManager {
 
     private _run(): void {
         this._scene.onBeforeDrawPhaseObservable.add((evtData: BABYLON.Scene, evtState: BABYLON.EventState) => {
-            this._engine.clear(null, true, false, false);
             let cam = evtData.activeCamera;
+            //this._engine.clear(new BABYLON.Color4(0, 1, 0, 1), false, false, true);
             if (this._rtCams[cam.toString()]) {
                 this._beforeDrawPhaseCam = cam;
                 let rt = (cam as Camera).renderTarget;

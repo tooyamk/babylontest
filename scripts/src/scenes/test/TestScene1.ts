@@ -35,18 +35,18 @@ class TestScene1 extends BaseScene {
         this._camera.setRotationXRange(-10.0 * GameManager.DEG_2_RAD, 90 * GameManager.DEG_2_RAD);
         this._input = new Input(GameManager.ins.canvas);
         this._player = new Player();
-        this._postProcessManager = new BABYLON.PostProcessManager(GameManager.ins.scene);
+        //this._postProcessManager = new BABYLON.PostProcessManager(GameManager.ins.scene);
 
         // Attach the camera to the canvas.
         //this._camera.attachControl(this._canvas, false);
 
-        this._assetsManager = new BABYLON.AssetsManager(GameManager.ins.scene);
-        this._assetsManager.useDefaultLoadingScreen = false;
+        //this._assetsManager = new BABYLON.AssetsManager(GameManager.ins.scene);
+        //this._assetsManager.useDefaultLoadingScreen = false;
 
-        this._rt = new BABYLON.RenderTargetTexture("", 1024, GameManager.ins.scene, false);
-        this._rt.renderList.push(this._skyBox);
+        //this._rt = new BABYLON.RenderTargetTexture("", 1024, GameManager.ins.scene, false);
+        //this._rt.renderList.push(this._skyBox);
 
-        this._mainRt = new BABYLON.RenderTargetTexture("", 2048, GameManager.ins.scene, false);
+        //this._mainRt = new BABYLON.RenderTargetTexture("", 2048, GameManager.ins.scene, false);
         //this._camera.mainCamera.renderTarget = this._mainRt;
         //this._mainRt.renderList = null;
         //this._scene.customRenderTargets.push(this._mainRt);
@@ -82,8 +82,8 @@ class TestScene1 extends BaseScene {
 
         // Create a built-in "ground" shape.
         //this._createGround();
-        this._createGroundWithHeightMap();
-        if (this._ground != null) {
+        //this._createGroundWithHeightMap();
+        if (this._ground) {
             this._ground.receiveShadows = true;
             let mat = new BABYLON.StandardMaterial("", GameManager.ins.scene);
             mat.emissiveColor = TestScene1.EMISSIVE_COLOR;
@@ -111,12 +111,15 @@ class TestScene1 extends BaseScene {
         plane.material = mat;
         */
 
+        /*
         let pp = new BABYLON.PostProcess("", "ppDrawTo", null, ["tex"], 0, this._camera.postProcessCamera);
         this._pp = pp;
         this._pp.onApply = (effect: BABYLON.Effect) => {
             effect.setTexture("tex", this._mainRt);
         };
+        */
 
+        /*
         let plane1 = BABYLON.MeshBuilder.CreatePlane("", { width: 6, height: 3 }, GameManager.ins.scene);
         plane1.position.y = 2;
         plane1.position.z = 2;
@@ -135,6 +138,7 @@ class TestScene1 extends BaseScene {
         mat2.setColor4("color", new BABYLON.Color4(0, 1, 0, 0.5));
         mat2.backFaceCulling = false;
         plane2.material = mat2;
+        */
 
         /*
         this._assetsManager.addMeshTask("", "", "res/test static model/", "test_one.babylon").onSuccess = (task : BABYLON.MeshAssetTask) => {
@@ -251,11 +255,15 @@ class TestScene1 extends BaseScene {
             if (!info.isError) {
                 let tex = info.data as BABYLON.Texture;
 
-                let mat = this._ground.material as BABYLON.StandardMaterial;
-                mat.diffuseTexture = tex;
+                if (this._ground) {
+                    let mat = this._ground.material as BABYLON.StandardMaterial;
+                    mat.diffuseTexture = tex;
+                }
 
-                mat = (this._player.getDisplay() as BABYLON.Mesh).material as BABYLON.StandardMaterial;
-                mat.diffuseTexture = tex;
+                if (this._player) {
+                    let mat = (this._player.getDisplay() as BABYLON.Mesh).material as BABYLON.StandardMaterial;
+                    mat.diffuseTexture = tex;
+                }
             }
         });
 

@@ -129,8 +129,7 @@ class ResInfo {
 
 
 class ResManager {
-    //public static readonly RES_ROOT:string = "http://127.0.0.1/wwwroot/";
-    public static readonly RES_ROOT: string = "file:./";
+    public static readonly RES_ROOT:string = "http://127.0.0.1/wwwroot/";
 
     public static readonly ins: ResManager = new ResManager();
 
