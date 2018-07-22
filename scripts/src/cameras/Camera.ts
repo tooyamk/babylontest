@@ -1,36 +1,19 @@
 class Camera extends BABYLON.TargetCamera {
-    private static _insAccumulator: number = 0;
+    public static readonly EXT_CAMERA: string = "_extCam";
 
     public clearColor: BABYLON.Color4 = new BABYLON.Color4(0, 0, 0, 1);
     public clearBackBuffer: boolean = true;
     public clearDepth: boolean = true;
     public clearStencil: boolean = true;
 
-    protected _renderTarget: BABYLON.RenderTargetTexture;
-
-    private _insID: string;
+    public renderTarget: BABYLON.RenderTargetTexture;
 
     constructor(name: string) {
-        super(name, BABYLON.Vector3.Zero(), GameManager.ins.scene)
+        super(name, BABYLON.Vector3.Zero(), GameManager.ins.scene);
+
+        (this as any)[Camera.EXT_CAMERA] = true;
         
-        this._insID = "_@#$" + (++Camera._insAccumulator).toString();
-        this._renderTarget = null;
-    }
-
-    public toString(): string {
-        return super.toString() + this._insID;
-    }
-
-    public get renderTarget() : BABYLON.RenderTargetTexture {
-        return this._renderTarget;
-    }
-
-    public set renderTarget(rt: BABYLON.RenderTargetTexture) {
-        if (this._renderTarget != rt) {
-            if (this._renderTarget != null) GameManager.ins.unregisterRenderTargetCamera(this);
-            this._renderTarget = rt;
-            if (this._renderTarget != null) GameManager.ins.registerRenderTargetCamera(this);
-        }
+        this.renderTarget = null;
     }
 
     public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void {

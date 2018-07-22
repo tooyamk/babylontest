@@ -1,19 +1,20 @@
-°²×°node.js
+ï»¿å®‰è£…node.js
 
-°²×°TypeScript 
+å®‰è£…TypeScript 
 cmd: npm install -g typescript 
 
-°²×°@Angular/cli
+å®‰è£…@Angular/cli
 cmd: npm install -g @angular/cli
 
-°²×°vscode
+å®‰è£…vscode
 
-°²×°vscode chromeµ÷ÊÔ²å¼ş : Debugger for Chrome
+å®‰è£…vscode chromeè°ƒè¯•æ’ä»¶ : Debugger for Chrome
 
-°²×°apache
-ÔÚhttpd.confÎÄ¼şÀï
-1:½«DocumentRoot¶¨Î»µ½¹¤³Ì¸ùÄ¿Â¼
-2:<Directory />½ÚµãÏÂ°Ñ
+å®‰è£…apache(æˆ–ä»»æ„çš„http server)
+åœ¨httpd.confæ–‡ä»¶é‡Œ
+1:å°†DocumentRootå®šä½åˆ°å·¥ç¨‹æ ¹ç›®å½•
+2:<Directory />èŠ‚ç‚¹ä¸‹
+  Require all denied
   Order deny,allow
   Deny from all
-  Á½¸öÅäÖÃ×¢ÊÍµô
+  å¦‚æœæœ‰è¿™å‡ é¡¹,æ³¨é‡Šæˆ–åˆ æ‰

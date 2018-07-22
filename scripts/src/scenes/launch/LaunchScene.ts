@@ -40,7 +40,7 @@ class LaunchScene extends BaseScene {
 
     protected _onEndFrame(evtData: BABYLON.Engine, evtState: BABYLON.EventState): void {
         if (this._doneNumTasks == this._totalNumTasks) {
-            SceneManager.ins.change(new TestScene2());
+            SceneManager.ins.change(new TestScene1());
         }
     }
 }

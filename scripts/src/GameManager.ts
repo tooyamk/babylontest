@@ -44,27 +44,33 @@ class GameManager {
     private _engine: BABYLON.Engine;
     private _scene: BABYLON.Scene;
 
-    private _rtCams: { [key: string]: boolean };
-    private _beforeDrawPhaseCam: BABYLON.Camera;
+    private _beforeDrawPhaseCam: Camera;
 
     private _date: Date;
 
     constructor(canvas: HTMLCanvasElement) {
         GameManager._ins = this;
 
-        this._rtCams = {};
         this._beforeDrawPhaseCam = null;
         this._date = new Date();
 
         this._canvas = canvas;
-        this._engine = new BABYLON.Engine(this._canvas, true);
+
+        let opt = {
+            premultipliedAlpha: false,
+            preserveDrawingBuffer: true,
+            depth: true,
+            stencil: true
+        };
+        this._engine = new BABYLON.Engine(this._canvas, true, opt, false);
+
         this._scene = new BABYLON.Scene(this._engine);
         this._scene.autoClear = false;
         this._scene.autoClearDepthAndStencil = false;
-        BABYLON.DebugLayer.InspectorURL = "./babylon/babylon.inspector.bundle.js";
-        //this._scene.debugLayer.show();
-        //this._engine.restoreDefaultFramebuffer();
-        //this._engine.clear(new BABYLON.Color4(0, 1, 0, 1), true, true, true);
+        BABYLON.RenderingManager.AUTOCLEAR = false;
+        BABYLON.DebugLayer.InspectorURL = "libs/babylon.inspector.bundle.js";
+        this._scene.debugLayer.show();
+
         window.addEventListener('resize', (evt: UIEvent) => {
             this._engine.resize();
         });
@@ -91,14 +97,6 @@ class GameManager {
         return this._engine;
     }
 
-    public registerRenderTargetCamera(cam: Camera): void {
-        this._rtCams[cam.toString()] = true;
-    }
-
-    public unregisterRenderTargetCamera(cam: Camera): void {
-        delete this._rtCams[cam.toString()];
-    }
-
     public getTimestamp(): number {
         return this._date.getTime();
     }
@@ -106,12 +104,17 @@ class GameManager {
     private _run(): void {
         this._scene.onBeforeDrawPhaseObservable.add((evtData: BABYLON.Scene, evtState: BABYLON.EventState) => {
             let cam = evtData.activeCamera;
-            //this._engine.clear(new BABYLON.Color4(0, 1, 0, 1), false, false, true);
-            if (this._rtCams[cam.toString()]) {
-                this._beforeDrawPhaseCam = cam;
-                let rt = (cam as Camera).renderTarget;
-                this._engine.bindFramebuffer(rt.getInternalTexture(), 0, undefined, undefined, true);
-                this._engine.clear(null, true, true, true);
+            if ((cam as any)[Camera.EXT_CAMERA]) {
+                let extCam = cam as Camera;
+                this._beforeDrawPhaseCam = extCam;
+                let rt = extCam.renderTarget;
+                if (rt) {
+                    this._engine.bindFramebuffer(rt.getInternalTexture(), 0, undefined, undefined, true);
+                }
+
+                this._engine.clear(extCam.clearColor, extCam.clearBackBuffer, extCam.clearDepth, extCam.clearStencil);
+            } else {
+                this._engine.clear(this._scene.clearColor, true, true, true);
             }
         });
 

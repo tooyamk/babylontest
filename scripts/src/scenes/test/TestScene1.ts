@@ -26,7 +26,7 @@ class TestScene1 extends BaseScene {
     public start(): void {
         super.start();
 
-        //this._createSkybox();
+        this._createSkybox();
 
         GameManager.ins.scene.clearColor.set(1, 0, 0, 1);
 
@@ -43,17 +43,17 @@ class TestScene1 extends BaseScene {
         //this._assetsManager = new BABYLON.AssetsManager(GameManager.ins.scene);
         //this._assetsManager.useDefaultLoadingScreen = false;
 
-        //this._rt = new BABYLON.RenderTargetTexture("", 1024, GameManager.ins.scene, false);
-        //this._rt.renderList.push(this._skyBox);
+        this._rt = new BABYLON.RenderTargetTexture("", 1024, GameManager.ins.scene, false);
+        this._rt.renderList.push(this._skyBox);
 
-        //this._mainRt = new BABYLON.RenderTargetTexture("", 2048, GameManager.ins.scene, false);
+        this._mainRt = new BABYLON.RenderTargetTexture("", 2048, GameManager.ins.scene, false);
         //this._camera.mainCamera.renderTarget = this._mainRt;
         //this._mainRt.renderList = null;
         //this._scene.customRenderTargets.push(this._mainRt);
         //this._camera.mainCamera.customRenderTargets.push(this._mainRt);
 
         // Create a basic light, aiming 0,1,0 - meaning, to the sky.
-        /*
+        
         let light: BABYLON.DirectionalLight = new BABYLON.DirectionalLight('light1', new BABYLON.Vector3(1, -1, 0), GameManager.ins.scene);
         light.position = new BABYLON.Vector3(-30, 30, 0);
         this._light = light;
@@ -61,7 +61,7 @@ class TestScene1 extends BaseScene {
         this._shadowGenerator = new BABYLON.ShadowGenerator(1024, this._light);
         this._shadowGenerator.useBlurExponentialShadowMap = true;
         this._shadowGenerator.bias = 0.01;
-        */
+        
         //this._shadowGenerator.forceBackFacesOnly = true;
 
         // Create a built-in "sphere" shape; with 16 segments and diameter of 2.
@@ -82,7 +82,7 @@ class TestScene1 extends BaseScene {
 
         // Create a built-in "ground" shape.
         //this._createGround();
-        //this._createGroundWithHeightMap();
+        this._createGroundWithHeightMap();
         if (this._ground) {
             this._ground.receiveShadows = true;
             let mat = new BABYLON.StandardMaterial("", GameManager.ins.scene);
@@ -313,7 +313,7 @@ class TestScene1 extends BaseScene {
         this._camera.identity();
 
         //shadowGenerator.getShadowMap().renderList.push(sphere);
-        //this._shadowGenerator.addShadowCaster(mesh);
+        this._shadowGenerator.addShadowCaster(mesh);
     }
 
     protected _onBeginFrame(evtData: BABYLON.Engine, evtState: BABYLON.EventState): void {
@@ -340,7 +340,7 @@ class TestScene1 extends BaseScene {
     }
 
     protected _onBeforeRender(evtData: BABYLON.Scene, evtState: BABYLON.EventState): void {
-        //this._rt.render(false, false);
+        this._rt.render(false, false);
     }
 
     protected _onAfterRender(evtData: BABYLON.Scene, evtState: BABYLON.EventState): void {
