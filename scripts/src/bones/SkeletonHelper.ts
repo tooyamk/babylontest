@@ -31,27 +31,27 @@ class SkeletonHelper {
             dest.animations[0].setKeys([]);
         }
 
-        var from = range.x;
-        var to = range.y;
-        var sourceKeys = source.animations[0].getKeys();
+        let from = range.x;
+        let to = range.y;
+        let sourceKeys = source.animations[0].getKeys();
 
         // rescaling prep
-        var sourceBoneLength = source.length;
-        var sourceParent = source.getParent();
-        var parent = dest.getParent();
-        var parentScalingReqd = rescaleAsRequired && sourceParent && sourceBoneLength && this.length && sourceBoneLength !== this.length;
-        var parentRatio = parentScalingReqd && parent && sourceParent ? parent.length / sourceParent.length : 1;
+        let sourceBoneLength = source.length;
+        let sourceParent = source.getParent();
+        let parent = dest.getParent();
+        let parentScalingReqd = rescaleAsRequired && sourceParent && sourceBoneLength && this.length && sourceBoneLength !== this.length;
+        let parentRatio = parentScalingReqd && parent && sourceParent ? parent.length / sourceParent.length : 1;
 
-        var dimensionsScalingReqd = rescaleAsRequired && !parent && skelDimensionsRatio && (skelDimensionsRatio.x !== 1 || skelDimensionsRatio.y !== 1 || skelDimensionsRatio.z !== 1);
+        let dimensionsScalingReqd = rescaleAsRequired && !parent && skelDimensionsRatio && (skelDimensionsRatio.x !== 1 || skelDimensionsRatio.y !== 1 || skelDimensionsRatio.z !== 1);
 
-        var destKeys = dest.animations[0].getKeys();
+        let destKeys = dest.animations[0].getKeys();
 
         // loop vars declaration
-        var orig: { frame: number, value: BABYLON.Matrix };
-        var origTranslation: BABYLON.Vector3;
-        var mat: BABYLON.Matrix;
+        let orig: { frame: number, value: BABYLON.Matrix };
+        let origTranslation: BABYLON.Vector3;
+        let mat: BABYLON.Matrix;
 
-        for (var key = 0, nKeys = sourceKeys.length; key < nKeys; key++) {
+        for (let key = 0, nKeys = sourceKeys.length; key < nKeys; key++) {
             orig = sourceKeys[key];
             if (orig.frame >= from && orig.frame <= to) {
                 if (rescaleAsRequired) {
@@ -87,9 +87,7 @@ class SkeletonHelper {
         let destBoneDict: { [key: string]: BABYLON.Bone } = {};
         let destBones = dest.bones;
         let srcBones = src.bones;
-        let nBones: number;
-        let i: number;
-        for (i = 0, nBones = destBones.length; i < nBones; ++i) {
+        for (let i = 0, nBones = destBones.length; i < nBones; ++i) {
             destBoneDict[destBones[i].name] = destBones[i];
         }
 
@@ -115,7 +113,7 @@ class SkeletonHelper {
             }
         };
 
-        for (i = 0, nBones = srcBones.length; i < nBones; ++i) {
+        for (let i = 0, nBones = srcBones.length; i < nBones; ++i) {
             let srcBone = srcBones[i];
             let destBone = destBoneDict[srcBone.name];
             if (!destBone) destBone = appendBone(srcBone);

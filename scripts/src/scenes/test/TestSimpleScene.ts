@@ -1,10 +1,10 @@
-class TestScene2 extends BaseScene {
+class TestSimpleScene extends BaseLogicScene {
     constructor() {
         super();
     }
 
-    public start(): void {
-        super.start();
+    public activate(): void {
+        super.activate();
 
         let scene = GameManager.ins.scene;
 

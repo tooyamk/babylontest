@@ -1,4 +1,4 @@
-class LaunchScene extends BaseScene {
+class LaunchScene extends BaseLogicScene {
     private _doneNumTasks: number;
     private _totalNumTasks: number;
 
@@ -9,13 +9,13 @@ class LaunchScene extends BaseScene {
         this._totalNumTasks = 0;
     }
 
-    public start(): void {
-        super.start();
+    public activate(): void {
+        super.activate();
 
         this._loadShader(false, "res/shaders/ppDrawTo.frag");
         
-        this._loadShader(true, "res/shaders/oit.vert");
-        this._loadShader(false, "res/shaders/oit.frag");
+        this._loadShader(true, "res/shaders/WeightedBlended.vert");
+        this._loadShader(false, "res/shaders/WeightedBlended.frag");
     }
 
     private _loadShader(isVertex: boolean, url: string, name: string = null): void {
@@ -40,7 +40,7 @@ class LaunchScene extends BaseScene {
 
     protected _onEndFrame(evtData: BABYLON.Engine, evtState: BABYLON.EventState): void {
         if (this._doneNumTasks == this._totalNumTasks) {
-            SceneManager.ins.change(new TestScene1());
+            LogicSceneManager.ins.change(new TestOITRenderScene());
         }
     }
 }

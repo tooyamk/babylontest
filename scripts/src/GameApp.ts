@@ -7,5 +7,5 @@ window.addEventListener("DOMContentLoaded", () => {
 
     GameManager.init(document.getElementById("renderCanvas") as HTMLCanvasElement);
 
-    SceneManager.ins.change(new LaunchScene());
+    LogicSceneManager.ins.change(new LaunchScene());
 });

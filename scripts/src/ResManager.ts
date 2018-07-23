@@ -294,13 +294,27 @@ class ResManager {
         };
     }
 
-    public createShaderOptions(needAlphaBlending: boolean = false, attributes: string[] = [], uniforms: string[] = [], samplers: string[] = []): any {
-        return {
-            needAlphaBlending: needAlphaBlending,
-            attributes: attributes,
-            uniforms: uniforms,
-            samplers: samplers
-        };
+    public createShaderOptions(needAlphaTesting: boolean = false, needAlphaBlending: boolean = false, 
+        attributes: string[] = null, uniforms: string[] = null, samplers: string[] = null, 
+        defines: string[] = null, undefines: string[] = null): any {
+        let opt: any = {};
+
+        opt.needAlphaTesting = needAlphaTesting;
+        opt.needAlphaBlending = needAlphaBlending;
+
+        if (attributes) opt.attributes = attributes;
+        if (uniforms) opt.uniforms = uniforms;
+        if (samplers) opt.samplers = samplers;
+
+        if (defines || undefines) {
+            let defs: string[] = [];
+            if (defines) for (const value of defines) defs.push("#define " + value);
+            if (undefines) for (const value of undefines) defs.push("#define " + value);
+
+            opt.defines = defs;
+        }
+
+        return opt;
     }
 
     public disassembleFileNameFromPath(path: string): string {

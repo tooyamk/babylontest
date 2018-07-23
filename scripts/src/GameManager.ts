@@ -48,6 +48,8 @@ class GameManager {
 
     private _date: Date;
 
+    private _camRenderFunc: (camera: BABYLON.Camera) => void;
+
     constructor(canvas: HTMLCanvasElement) {
         GameManager._ins = this;
 
@@ -68,6 +70,13 @@ class GameManager {
         this._scene.autoClear = false;
         this._scene.autoClearDepthAndStencil = false;
         BABYLON.RenderingManager.AUTOCLEAR = false;
+
+        this._camRenderFunc = null;
+
+        this._scene["_processSubCameras"] = (camera: BABYLON.Camera) => {
+            this.cameraRender(camera);
+        };
+
         BABYLON.DebugLayer.InspectorURL = "libs/babylon.inspector.bundle.js";
         this._scene.debugLayer.show();
 
@@ -101,6 +110,31 @@ class GameManager {
         return this._date.getTime();
     }
 
+    public cameraRender(camera: BABYLON.Camera): void {
+        if (!this._camRenderFunc) {
+            this._camRenderFunc = function (camera: BABYLON.Camera) {
+                if (camera.cameraRigMode === Camera.RIG_MODE_NONE) {
+                    this._renderForCamera(camera);
+                    return;
+                }
+
+                for (var index = 0; index < camera._rigCameras.length; index++) {
+                    this._renderForCamera(camera._rigCameras[index], camera);
+                }
+
+                this.activeCamera = camera;
+                this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
+
+                if ((camera as any)[Camera.EXT_CAMERA]) {
+                    let cam = camera as Camera;
+                    if (cam.onRenderFinish) cam.onRenderFinish();
+                }
+            };
+        }
+
+        this._camRenderFunc.call(this._scene, camera);
+    }
+
     private _run(): void {
         this._scene.onBeforeDrawPhaseObservable.add((evtData: BABYLON.Scene, evtState: BABYLON.EventState) => {
             let cam = evtData.activeCamera;
@@ -119,14 +153,16 @@ class GameManager {
         });
 
         this._scene.onAfterDrawPhaseObservable.add((evtData: BABYLON.Scene, evtState: BABYLON.EventState) => {
-            if (this._beforeDrawPhaseCam == evtData.activeCamera) {
+            if (this._beforeDrawPhaseCam === evtData.activeCamera) {
                 this._beforeDrawPhaseCam = null;
                 this._engine.restoreDefaultFramebuffer();
             }
         });
 
         this._engine.runRenderLoop(() => {
-            if (this._scene.activeCamera != null) this._scene.render();
+            if (this._scene.activeCamera != null) {
+                this._scene.render();
+            }
         });
     }
 }

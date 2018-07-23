@@ -1,4 +1,4 @@
-abstract class BaseScene {
+abstract class BaseLogicScene {
     private _onBeginFrameObserver: BABYLON.Observer<BABYLON.Engine>;
     private _onEndFrameObserver: BABYLON.Observer<BABYLON.Engine>;
     private _onBeforeRenderObserver: BABYLON.Observer<BABYLON.Scene>;
@@ -11,7 +11,7 @@ abstract class BaseScene {
         this._onAfterRenderObserver = null;
     }
 
-    public start(): void {
+    public activate(): void {
         let engine = GameManager.ins.engine;
 
         this._onBeginFrameObserver = engine.onBeginFrameObservable.add((evtData: BABYLON.Engine, evtState: BABYLON.EventState) => {
@@ -32,7 +32,7 @@ abstract class BaseScene {
         });
     }
 
-    public dispose(): void {
+    public inactivate(): void {
         let engine = GameManager.ins.engine;
         if (this._onBeginFrameObserver) {
             engine.onBeginFrameObservable.remove(this._onBeginFrameObserver);
