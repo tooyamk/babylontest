@@ -78,11 +78,31 @@ class ResInfo {
 
     public dispose(): void {
         if (!this._isDisposed) {
-            this._isDisposed = true;
-            this._data = null;
-            this._callbacks.length = 0;
+            if (this.loading) {
+                this._callbacks.length = 0;
+                ResManager.ins.appendDelayDispose(this);
+            } else {
+                this._isDisposed = true;
 
-            ResManager.ins.disposeResourceInfo(this);
+                switch (this._dataType) {
+                    case ResType.ASSET_CONTAINER:
+                        ResManager.disposeAssetContainer(this._data as BABYLON.AssetContainer);
+                        break;
+                    case ResType.SKELETON:
+                        (this._data as BABYLON.Skeleton).dispose();
+                        break;
+                    case ResType.TEX:
+                        (this._data as BABYLON.Texture).dispose();
+                        break;
+                    default:
+                        break;
+                }
+
+                this.setData(null, ResType.NULL);
+                this._callbacks.length = 0;
+
+                ResManager.ins.disposeResourceInfo(this);
+            }
         }
     }
 
@@ -135,9 +155,95 @@ class ResManager {
     public static readonly ins: ResManager = new ResManager();
 
     private _resMap: { [key: string]: ResInfo };
+    private _delayDisposeRes: ResInfo[];
 
     constructor() {
         this._resMap = {};
+        this._delayDisposeRes = [];
+    }
+
+    public static disposeAssetContainer(ac: BABYLON.AssetContainer): void {
+        if (ac) {
+            for (let value of ac.actionManagers) value.dispose(); 
+            ac.actionManagers.length = 0;
+
+            for (let value of ac.animationGroups) value.dispose();
+            ac.animationGroups.length = 0;
+
+            for (let value of ac.cameras) value.dispose();
+            ac.cameras.length = 0;
+
+            for (let value of ac.effectLayers) value.dispose();
+            ac.effectLayers.length = 0;
+
+            for (let value of ac.geometries) value.dispose();
+            ac.geometries.length = 0;
+
+            for (let value of ac.lensFlareSystems) value.dispose();
+            ac.lensFlareSystems.length = 0;
+
+            for (let value of ac.lights) value.dispose();
+            ac.lights.length = 0;
+
+            for (let value of ac.materials) value.dispose();
+            ac.materials.length = 0;
+
+            for (let value of ac.meshes) value.dispose();
+            ac.meshes.length = 0;
+
+            for (let value of ac.multiMaterials) value.dispose();
+            ac.multiMaterials.length = 0;
+
+            for (let value of ac.particleSystems) value.dispose();
+            ac.particleSystems.length = 0;
+
+            for (let value of ac.shadowGenerators) value.dispose();
+            ac.shadowGenerators.length = 0;
+
+            for (let value of ac.skeletons) value.dispose();
+            ac.skeletons.length = 0;
+
+            for (let value of ac.sounds) value.dispose();
+            ac.sounds.length = 0;
+
+            for (let value of ac.textures) value.dispose();
+            ac.textures.length = 0;
+
+            for (let value of ac.transformNodes) value.dispose();
+            ac.transformNodes.length = 0;
+        }
+    }
+
+    public tick(): void {
+        let num = this._delayDisposeRes.length;
+        if (num > 0) {
+            let arr: ResInfo[] = [];
+            let curIdx = 0, endIdx = num - 1;
+            do {
+                let info = this._delayDisposeRes[curIdx];
+                if (info.loading) {
+                    ++curIdx;
+                } else {
+                    this._delayDisposeRes[curIdx] = this._delayDisposeRes[endIdx];
+                    --endIdx;
+
+                    arr.push(info);
+                }
+            } while (curIdx <= endIdx);
+
+            if (arr.length > 0) {
+                this._delayDisposeRes.length -= arr.length;
+
+                for (let info of arr) info.dispose();
+            }
+        }
+    }
+
+    public appendDelayDispose(info: ResInfo): void {
+        if (info) {
+            delete this._resMap[info.key];
+            this._delayDisposeRes.push(info);
+        }
     }
 
     public disposeResourceInfoWithURL(url: string): void {

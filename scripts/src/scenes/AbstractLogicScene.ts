@@ -1,14 +1,18 @@
-abstract class BaseLogicScene {
+abstract class AbstractLogicScene {
     private _onBeginFrameObserver: BABYLON.Observer<BABYLON.Engine>;
     private _onEndFrameObserver: BABYLON.Observer<BABYLON.Engine>;
     private _onBeforeRenderObserver: BABYLON.Observer<BABYLON.Scene>;
     private _onAfterRenderObserver: BABYLON.Observer<BABYLON.Scene>;
+
+    private _entities: ExtSet<Entity>;
 
     constructor() {
         this._onBeginFrameObserver = null;
         this._onEndFrameObserver = null;
         this._onBeforeRenderObserver = null;
         this._onAfterRenderObserver = null;
+
+        this._entities = new ExtSet<Entity>();
     }
 
     public activate(): void {
@@ -54,6 +58,24 @@ abstract class BaseLogicScene {
             scene.onAfterRenderObservable.remove(this._onAfterRenderObserver);
             this._onAfterRenderObserver = null;
         }
+
+        this._entities.clear();
+    }
+
+    public addEntity(entity: Entity): void {
+        this._entities.add(entity);
+    }
+
+    public remvoeEntity(entity: Entity): void {
+        this._entities.delete(entity);
+    }
+
+    public tick(time: number, type: TickType): void {
+        this._entities.traversing = true;
+        for (let e of this._entities.container) {
+            e.tick(time, type);
+        }
+        this._entities.traversing = false;
     }
 
     protected _onBeginFrame(evtData: BABYLON.Engine, evtState: BABYLON.EventState): void {

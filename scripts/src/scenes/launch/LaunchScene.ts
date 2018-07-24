@@ -1,4 +1,4 @@
-class LaunchScene extends BaseLogicScene {
+class LaunchScene extends AbstractLogicScene {
     private _doneNumTasks: number;
     private _totalNumTasks: number;
 

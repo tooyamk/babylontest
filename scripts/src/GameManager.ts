@@ -34,6 +34,13 @@ onBeforeRenderObservable
 onAfterRenderObservable
 */
 
+enum TickType {
+    BEGIN,
+    BEFORE_RENDER,
+    END
+}
+
+
 class GameManager {
     public static readonly PI2: number = Math.PI * 2.0;
     public static readonly DEG_2_RAD: number = Math.PI / 180.0;
@@ -59,12 +66,15 @@ class GameManager {
         this._canvas = canvas;
 
         let opt = {
+            disableWebGL2Support: true,
             premultipliedAlpha: false,
             preserveDrawingBuffer: true,
             depth: true,
             stencil: true
         };
         this._engine = new BABYLON.Engine(this._canvas, true, opt, false);
+
+        console.log("webgl version : " + this._engine.webGLVersion);
 
         this._scene = new BABYLON.Scene(this._engine);
         this._scene.autoClear = false;
@@ -77,17 +87,21 @@ class GameManager {
             this.cameraRender(camera);
         };
 
-        BABYLON.DebugLayer.InspectorURL = "libs/babylon.inspector.bundle.js";
-        this._scene.debugLayer.show();
-
         window.addEventListener('resize', (evt: UIEvent) => {
             this._engine.resize();
         });
+
+        InputManager.init(canvas);
+
+        BABYLON.DebugLayer.InspectorURL = "libs/babylon.inspector.bundle.js";
+        this._scene.debugLayer.show();
     }
 
     public static init(canvas: HTMLCanvasElement): void {
-        if (GameManager._ins == null) new GameManager(canvas);
-        GameManager._ins._run();
+        if (!GameManager._ins) {
+            new GameManager(canvas);
+            GameManager._ins._run();
+        }
     }
 
     public static get ins(): GameManager {
@@ -136,6 +150,12 @@ class GameManager {
     }
 
     private _run(): void {
+        let time = 0.0;
+
+        this._scene.onBeforeRenderObservable.add((evtData: BABYLON.Scene, evtState: BABYLON.EventState) => {
+            LogicSceneManager.ins.tick(time, TickType.BEFORE_RENDER);
+        });
+
         this._scene.onBeforeDrawPhaseObservable.add((evtData: BABYLON.Scene, evtState: BABYLON.EventState) => {
             let cam = evtData.activeCamera;
             if ((cam as any)[Camera.EXT_CAMERA]) {
@@ -159,10 +179,22 @@ class GameManager {
             }
         });
 
+        //this._scene.onAfterRenderObservable.add((evtData: BABYLON.Scene, evtState: BABYLON.EventState) => {
+        //});
+
         this._engine.runRenderLoop(() => {
+            let time = this._scene.useConstantAnimationDeltaTime ? 16 : Math.max(BABYLON.Scene.MinDeltaTime, Math.min(this._engine.getDeltaTime(), BABYLON.Scene.MaxDeltaTime));
+
+            LogicSceneManager.ins.tick(time, TickType.BEGIN);
+
             if (this._scene.activeCamera != null) {
                 this._scene.render();
             }
+
+            LogicSceneManager.ins.tick(time, TickType.END);
+
+            ResManager.ins.tick();
+            InputManager.ins.endFrame();
         });
     }
 }

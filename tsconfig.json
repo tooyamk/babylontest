@@ -6,7 +6,7 @@
     "noUnusedParameters": false,
     "sourceMap": true,
     "module": "amd",
-    "target": "es5",
+    "target": "es6",
     "removeComments": true,
     "preserveConstEnums": true,
     "listFiles": true,

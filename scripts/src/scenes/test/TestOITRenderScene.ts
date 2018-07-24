@@ -1,12 +1,10 @@
-class TestOITRenderScene extends BaseLogicScene {
+class TestOITRenderScene extends AbstractLogicScene {
     public static readonly EMISSIVE_COLOR: BABYLON.Color3 = new BABYLON.Color3(0.2, 0.2, 0.2);
 
     private _camera: CameraManager;
     private _light: BABYLON.ShadowLight;
     private _assetsManager: BABYLON.AssetsManager;
     private _ground: BABYLON.Mesh;
-    private _input: Input;
-    private _player: Player;
     private _skyBox: BABYLON.Mesh;
     private _shadowGenerator: BABYLON.ShadowGenerator;
     private _rt: BABYLON.RenderTargetTexture;
@@ -31,14 +29,13 @@ class TestOITRenderScene extends BaseLogicScene {
         // Create a FreeCamera, and set its position to (x:0, y:5, z:-10).
         this._camera = new CameraManager();
         this._camera.setRotationXRange(-10.0 * GameManager.DEG_2_RAD, 90 * GameManager.DEG_2_RAD);
-        this._input = new Input(GameManager.ins.canvas);
-        this._player = new Player();
         //this._postProcessManager = new BABYLON.PostProcessManager(GameManager.ins.scene);
 
         this._rt = new BABYLON.RenderTargetTexture("", 1024, GameManager.ins.scene, false);
         this._rt.renderList.push(this._skyBox);
 
         this._mainRt = new BABYLON.RenderTargetTexture("", 2048, GameManager.ins.scene, false);
+        this._mainRt.createDepthStencilTexture(null, true, true);
         //this._camera.mainCamera.renderTarget = this._mainRt;
         //this._mainRt.renderList = null;
         //this._scene.customRenderTargets.push(this._mainRt);
@@ -101,8 +98,8 @@ class TestOITRenderScene extends BaseLogicScene {
                     mat.diffuseTexture = tex;
                 }
 
-                if (this._player) {
-                    this._player.root.getChildMeshes(true, node => {
+                if (Player.self) {
+                    Player.self.displayContainer.getChildMeshes(true, node => {
                         let mat = (node as BABYLON.Mesh).material as BABYLON.StandardMaterial;
                         if (mat) mat.diffuseTexture = tex;
                         return false;
@@ -133,6 +130,9 @@ class TestOITRenderScene extends BaseLogicScene {
     }
 
     private _createPlayer(): void {
+        let player = new Player();
+        Player.self = player;
+
         let mesh = BABYLON.MeshBuilder.CreateBox("", { width: 1, height: 2, depth: 1 });
         mesh.position.y = 2;
 
@@ -140,7 +140,7 @@ class TestOITRenderScene extends BaseLogicScene {
         mat.emissiveColor = TestScene1.EMISSIVE_COLOR;
         mesh.material = mat;
 
-        mesh.parent = this._player.root;
+        mesh.parent = player.displayContainer;
         //this._player.root.setEnabled(false);
         //this._player.root.dispose(true);
 
@@ -149,29 +149,26 @@ class TestOITRenderScene extends BaseLogicScene {
 
         //shadowGenerator.getShadowMap().renderList.push(sphere);
         this._shadowGenerator.addShadowCaster(mesh);
+
+        LogicSceneManager.ins.scene.addEntity(player);
+        player.behavior = new KeyboardMouseBehavior();
     }
 
     protected _onBeginFrame(evtData: BABYLON.Engine, evtState: BABYLON.EventState): void {
-        if (this._input.isKeyPress("a")) this._player.root.translate(new BABYLON.Vector3(-1, 0, 0), 0.1, BABYLON.Space.LOCAL);
-        if (this._input.isKeyPress("d")) this._player.root.translate(new BABYLON.Vector3(1, 0, 0), 0.1, BABYLON.Space.LOCAL);
-        if (this._input.isKeyPress("w")) this._player.root.translate(new BABYLON.Vector3(0, 0, 1), 0.1, BABYLON.Space.LOCAL);
-        if (this._input.isKeyPress("s")) this._player.root.translate(new BABYLON.Vector3(0, 0, -1), 0.1, BABYLON.Space.LOCAL);
-
-        let mw = this._input.getMouseWheel();
+        let mw = InputManager.ins.getMouseWheel();
         if (mw != 0) this._camera.mainCamera.position.z += mw * 0.01;
 
-        let mlk = this._input.getMouseKeyInfo(0);
+        let mlk = InputManager.ins.getMouseKeyInfo(0);
         if (mlk != null && mlk.isDragging) {
             this._camera.rotationY += mlk.dragDelta.x * 1 * GameManager.DEG_2_RAD;
         }
 
-        let mrk = this._input.getMouseKeyInfo(2);
+        let mrk = InputManager.ins.getMouseKeyInfo(2);
         if (mrk != null && mrk.isDragging) {
-            this._player.root.rotation.y += mrk.dragDelta.x * 1 * GameManager.DEG_2_RAD;
             this._camera.rotationX += mrk.dragDelta.y * 1 * GameManager.DEG_2_RAD;
         }
 
-        if (this._input.isMousePress(1)) this._camera.identity();
+        if (InputManager.ins.isMousePress(1)) this._camera.identity();
     }
 
     protected _onBeforeRender(evtData: BABYLON.Scene, evtState: BABYLON.EventState): void {
@@ -183,7 +180,5 @@ class TestOITRenderScene extends BaseLogicScene {
             //this._mainRt.render(false, false);
             //this._postProcessManager.directRender([this._pp], null, true);
         }
-
-        this._input.endFrame();
     }
 }

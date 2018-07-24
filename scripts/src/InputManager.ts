@@ -53,18 +53,28 @@ class MouseKeyInfo {
     }
 }
 
-class Input {
+class InputManager {
+    public static readonly ins: InputManager = new InputManager();
+
+    private _isInited: boolean;
     private _keyInputMap: { [key: string]: boolean };
     private _mouseInputMap: { [key: number]: MouseKeyInfo };
     private _mouseWheel: number;
     private _mousePos: BABYLON.Vector2;
 
-    constructor(canvas: HTMLCanvasElement) {
+    constructor() {
+        this._isInited = false;
         this._keyInputMap = {};
         this._mouseInputMap = {};
         this._mouseWheel = 0;
         this._mousePos = new BABYLON.Vector2(0, 0);
+    }
 
+    public static init(canvas: HTMLCanvasElement): void {
+        if (!this.ins._isInited) this.ins._init(canvas);
+    }
+
+    private _init(canvas: HTMLCanvasElement):void {
         canvas.addEventListener("keypress", (evt: KeyboardEvent) => {
             if (!evt.repeat) {
                 this._keyInputMap[evt.key.toLowerCase()] = true;

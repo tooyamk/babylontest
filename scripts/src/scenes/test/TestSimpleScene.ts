@@ -1,4 +1,4 @@
-class TestSimpleScene extends BaseLogicScene {
+class TestSimpleScene extends AbstractLogicScene {
     constructor() {
         super();
     }
