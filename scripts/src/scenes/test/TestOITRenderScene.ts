@@ -8,7 +8,7 @@ class TestOITRenderScene extends AbstractLogicScene {
     private _skyBox: BABYLON.Mesh;
     private _shadowGenerator: BABYLON.ShadowGenerator;
     private _rt: BABYLON.RenderTargetTexture;
-    private _mainRt: BABYLON.RenderTargetTexture;
+    private _mainRt: RenderTexture;
     private _pp: BABYLON.PostProcess;
     private _numLoadedAssets: number;
     private _totalLoadAssets: number;
@@ -29,17 +29,50 @@ class TestOITRenderScene extends AbstractLogicScene {
         // Create a FreeCamera, and set its position to (x:0, y:5, z:-10).
         this._camera = new CameraManager();
         this._camera.setRotationXRange(-10.0 * GameManager.DEG_2_RAD, 90 * GameManager.DEG_2_RAD);
-        //this._postProcessManager = new BABYLON.PostProcessManager(GameManager.ins.scene);
+        this._postProcessManager = new BABYLON.PostProcessManager(GameManager.ins.scene);
 
         this._rt = new BABYLON.RenderTargetTexture("", 1024, GameManager.ins.scene, false);
         this._rt.renderList.push(this._skyBox);
 
-        this._mainRt = new BABYLON.RenderTargetTexture("", 2048, GameManager.ins.scene, false);
-        this._mainRt.createDepthStencilTexture(null, true, true);
-        //this._camera.mainCamera.renderTarget = this._mainRt;
-        //this._mainRt.renderList = null;
+        let mesh1 = BABYLON.MeshBuilder.CreateBox("player1", { width: 1, height: 2, depth: 1 });
+        mesh1.layerMask = 1;
+        mesh1.position.y = 4000;
+        //mesh1.parent = mesh;
+        //mesh1.position.x = 0;
+
+        this._mainRt = new RenderTexture("", 2048, false);
+        this._mainRt.renderList = null;
+        this._mainRt.clearBackBuffer = false;
+        this._mainRt.clearDepth = false;
+        this._mainRt.clearStencil = false;
+        this._camera.mainCamera.renderTarget = this._mainRt;
+
+        let setPass = (pass: number) => {
+            let meshes = GameManager.ins.scene.getActiveMeshes().data;
+            let len = GameManager.ins.scene.getActiveMeshes().length;
+            for (let i = 0; i < len; ++i) {
+                let mat = meshes[i].material;
+                if (mat) (mat as WeightedBlendedMaterial).pass = pass;
+            }
+        };
+        
         //this._scene.customRenderTargets.push(this._mainRt);
         //this._camera.mainCamera.customRenderTargets.push(this._mainRt);
+        let mask = this._camera.mainCamera.layerMask;
+        //this._camera.mainCamera.layerMask = mask;
+        this._camera.mainCamera.onRenderFinish = camera => {
+            this._camera.mainCamera.layerMask = 1;
+
+            GameManager.ins.scene.unfreezeActiveMeshes();
+            GameManager.ins.scene.freezeActiveMeshes();
+            GameManager.ins.scene.unfreezeActiveMeshes();
+
+            setPass(WeightedBlendedMaterial.PASS_TRANSPARENT);
+            this._mainRt.render(false, false);
+            setPass(WeightedBlendedMaterial.PASS_OPAQUE);
+
+            this._camera.mainCamera.layerMask = mask;
+        };
 
         // Create a basic light, aiming 0,1,0 - meaning, to the sky.
         
@@ -63,31 +96,46 @@ class TestOITRenderScene extends AbstractLogicScene {
             this._ground.material = mat;
         }
 
-        let plane1 = BABYLON.MeshBuilder.CreatePlane("", { width: 6, height: 3 }, GameManager.ins.scene);
-        plane1.position.y = 2;
-        plane1.position.z = 2;
-        plane1.position.x = -2;
-        //plane1.rotate(new BABYLON.Vector3(0, 1, 0), Math.PI * 0.3, BABYLON.Space.LOCAL);
-        let opt = ResManager.ins.createShaderOptions(true, true, ["position"], ["worldViewProjection", "color"]);
-        //let mat1 = new BABYLON.ShaderMaterial("", GameManager.ins.scene, ResManager.ins.createShaderPath("WeightedBlended", null), opt);
-        let mat1 = new WeightedBlendedMaterial("");
-        mat1.emissiveColor = new BABYLON.Color3(1, 0, 0);
-        mat1.alpha = 0.5;
-        //mat1.setColor4("color", new BABYLON.Color4(1, 0, 0, 0.5));
-        mat1.backFaceCulling = false;
-        plane1.material = mat1;
-        let zz = mat1.alphaMode;
-        //plane1.renderingGroupId = 10;
+        let pp = new BABYLON.PostProcess("", "ppDrawTo", null, ["tex"], 0, this._camera.postProcessCamera);
+        this._pp = pp;
+        this._pp.onApply = (effect: BABYLON.Effect) => {
+            effect.setTexture("tex", this._mainRt);
+        };
 
-        let plane2 = BABYLON.MeshBuilder.CreatePlane("", { width: 6, height: 3 }, GameManager.ins.scene);
-        plane2.position.y = 2;
-        plane2.position.z = 3;
-        plane2.position.x = 2;
-        let mat2 = mat1.clone("");
-        //mat2.setColor4("color", new BABYLON.Color4(0, 1, 0, 0.5));
-        mat2.emissiveColor = new BABYLON.Color3(0, 1, 0);
-        mat2.backFaceCulling = false;
-        plane2.material = mat2;
+        ResManager.ins.loadTexture("res/tex.png", info => {
+            if (!info.isError) {
+                let tex = info.data as BABYLON.Texture;
+                tex.hasAlpha = true;
+
+                let plane1 = BABYLON.MeshBuilder.CreatePlane("aa", { width: 6, height: 3 }, GameManager.ins.scene);
+                plane1.layerMask = 1;
+                plane1.position.y = 2;
+                plane1.position.z = 2;
+                plane1.position.x = -0;
+                //plane1.rotate(new BABYLON.Vector3(0, 1, 0), Math.PI * 0.3, BABYLON.Space.LOCAL);
+                //let opt = ResManager.ins.createShaderOptions(true, true, ["position"], ["worldViewProjection", "color"]);
+                //let mat1 = new BABYLON.ShaderMaterial("", GameManager.ins.scene, ResManager.ins.createShaderPath("WeightedBlended", null), opt);
+                let mat1 = new WeightedBlendedMaterial("");
+                mat1.emissiveColor = new BABYLON.Color3(1, 0, 0);
+                mat1.diffuseTexture = tex;
+                mat1.pass = WeightedBlendedMaterial.PASS_OPAQUE;
+                //mat1.setColor4("color", new BABYLON.Color4(1, 0, 0, 0.5));
+                mat1.backFaceCulling = false;
+                plane1.material = mat1;
+                //plane1.renderingGroupId = 10;
+
+                let plane2 = BABYLON.MeshBuilder.CreatePlane("bb", { width: 6, height: 3 }, GameManager.ins.scene);
+                plane2.layerMask = 1;
+                plane2.position.y = 2;
+                plane2.position.z = 3;
+                plane2.position.x = 2;
+                let mat2 = mat1.clone("");
+                //mat2.setColor4("color", new BABYLON.Color4(0, 1, 0, 0.5));
+                mat2.emissiveColor = new BABYLON.Color3(0, 1, 0);
+                mat2.backFaceCulling = false;
+                plane2.material = mat2;
+            }
+        });
 
         ResManager.ins.loadTexture("res/earth.jpg", info => {
             if (!info.isError) {
@@ -111,6 +159,7 @@ class TestOITRenderScene extends AbstractLogicScene {
 
     private _createSkybox(): void {
         this._skyBox = BABYLON.MeshBuilder.CreateBox("skyBox", { size: 1000.0 }, GameManager.ins.scene);
+        this._skyBox.layerMask = 0x0FFFFFFF & ~0b1;
         var skyboxMaterial = new BABYLON.StandardMaterial("skyBox", GameManager.ins.scene);
         skyboxMaterial.backFaceCulling = false;
         skyboxMaterial.reflectionTexture = new BABYLON.CubeTexture("res/skybox/skybox", GameManager.ins.scene);
@@ -127,18 +176,24 @@ class TestOITRenderScene extends AbstractLogicScene {
 
     private _createGroundWithHeightMap(): void {
         this._ground = BABYLON.Mesh.CreateGroundFromHeightMap("ground", "res/worldHeightMap.jpg", 200, 200, 250, 0, 10, GameManager.ins.scene, false);
+        this._ground.layerMask = 0x0FFFFFFF & ~0b1;
     }
 
     private _createPlayer(): void {
         let player = new Player();
         Player.self = player;
 
-        let mesh = BABYLON.MeshBuilder.CreateBox("", { width: 1, height: 2, depth: 1 });
+        let mesh = BABYLON.MeshBuilder.CreateBox("player", { width: 1, height: 2, depth: 1 });
+        mesh.layerMask = 0x0FFFFFFF & ~0b1;
         mesh.position.y = 2;
 
         let mat = new BABYLON.StandardMaterial("", GameManager.ins.scene);
         mat.emissiveColor = TestScene1.EMISSIVE_COLOR;
         mesh.material = mat;
+
+        //let mesh1 = mesh.clone("");
+        //mesh1.parent = mesh;
+        //mesh1.position.x = 0;
 
         mesh.parent = player.displayContainer;
         //this._player.root.setEnabled(false);
@@ -178,7 +233,7 @@ class TestOITRenderScene extends AbstractLogicScene {
     protected _onAfterRender(evtData: BABYLON.Scene, evtState: BABYLON.EventState): void {
         if (this._numLoadedAssets == this._totalLoadAssets) {
             //this._mainRt.render(false, false);
-            //this._postProcessManager.directRender([this._pp], null, true);
+            this._postProcessManager.directRender([this._pp], null, true);
         }
     }
 }

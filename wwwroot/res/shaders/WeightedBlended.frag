@@ -192,6 +192,7 @@ void main(void) {
 	normalW = gl_FrontFacing ? normalW : -normalW;
 #endif
 
+/*
 #ifdef DIFFUSE
 	baseColor = texture2D(diffuseSampler, vDiffuseUV + uvOffset);
 
@@ -208,6 +209,31 @@ void main(void) {
 
 	baseColor.rgb *= vDiffuseInfos.y;
 #endif
+*/
+
+//custom
+#ifdef DIFFUSE
+	baseColor = texture2D(diffuseSampler, vDiffuseUV + uvOffset);
+
+	#ifdef ALPHAFROMDIFFUSE
+		alpha *= baseColor.a;
+	#endif
+	
+	#define CUSTOM_FRAGMENT_UPDATE_ALPHA
+
+	baseColor.rgb *= vDiffuseInfos.y;
+#endif
+
+#ifdef ALPHATEST
+	#if ALPHATEST_FUNC == 1
+		if (alpha < alphaCutOff)
+			discard;
+	#elif ALPHATEST_FUNC == 2
+		if (alpha > alphaCutOff)
+			discard;
+	#endif
+#endif
+//custom
 
 
 

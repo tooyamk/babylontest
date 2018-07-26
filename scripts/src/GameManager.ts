@@ -55,7 +55,7 @@ class GameManager {
 
     private _date: Date;
 
-    private _camRenderFunc: (camera: BABYLON.Camera) => void;
+    private _camRenderFunc: (camera: BABYLON.Camera, fireOnRenderFinish: boolean) => void;
 
     constructor(canvas: HTMLCanvasElement) {
         GameManager._ins = this;
@@ -124,11 +124,22 @@ class GameManager {
         return this._date.getTime();
     }
 
-    public cameraRender(camera: BABYLON.Camera): void {
+    private _callCameraOnRenderFinish(camera: BABYLON.Camera, fireOnRenderFinish: boolean = true): void {
+        if (fireOnRenderFinish && (camera as any)[Camera.EXT_CAMERA]) {
+            let cam = camera as Camera;
+            if (cam.onRenderFinish) cam.onRenderFinish(cam);
+        }
+    }
+
+    public cameraRender(camera: BABYLON.Camera, fireOnRenderFinish: boolean = true): void {
         if (!this._camRenderFunc) {
-            this._camRenderFunc = function (camera: BABYLON.Camera) {
+            let gm = GameManager.ins;
+
+            this._camRenderFunc = function (camera: BABYLON.Camera, fireOnRenderFinish: boolean) {
                 if (camera.cameraRigMode === Camera.RIG_MODE_NONE) {
                     this._renderForCamera(camera);
+                    gm._callCameraOnRenderFinish(camera, fireOnRenderFinish);
+
                     return;
                 }
 
@@ -139,14 +150,11 @@ class GameManager {
                 this.activeCamera = camera;
                 this.setTransformMatrix(this.activeCamera.getViewMatrix(), this.activeCamera.getProjectionMatrix());
 
-                if ((camera as any)[Camera.EXT_CAMERA]) {
-                    let cam = camera as Camera;
-                    if (cam.onRenderFinish) cam.onRenderFinish();
-                }
+                gm._callCameraOnRenderFinish(camera, fireOnRenderFinish);
             };
         }
 
-        this._camRenderFunc.call(this._scene, camera);
+        this._camRenderFunc.call(this._scene, camera, fireOnRenderFinish);
     }
 
     private _run(): void {
@@ -188,6 +196,9 @@ class GameManager {
             LogicSceneManager.ins.tick(time, TickType.BEGIN);
 
             if (this._scene.activeCamera != null) {
+                let sarr = GameManager.ins.scene.getActiveMeshes();
+                let arr = sarr.data;
+                
                 this._scene.render();
             }
 

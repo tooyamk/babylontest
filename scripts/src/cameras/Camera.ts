@@ -8,7 +8,7 @@ class Camera extends BABYLON.TargetCamera {
 
     public renderTarget: BABYLON.RenderTargetTexture;
 
-    public onRenderFinish: () => void = null;
+    public onRenderFinish: (camera: Camera) => void = null;
 
     constructor(name: string) {
         super(name, BABYLON.Vector3.Zero(), GameManager.ins.scene);
@@ -20,6 +20,7 @@ class Camera extends BABYLON.TargetCamera {
 
     public dispose(doNotRecurse?: boolean, disposeMaterialAndTextures?: boolean): void {
         this.renderTarget = null;
+        this.onRenderFinish = null;
 
         super.dispose(doNotRecurse, disposeMaterialAndTextures);
     }
